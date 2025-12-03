@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { AppState, BudgetCategory, Expense } from '@/types';
 
 type Action =
@@ -95,57 +96,67 @@ interface ExpenseContextType {
   updateExpense: (expense: Expense) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   resetApp: () => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
 export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(expenseReducer, initialState);
+  const { data: session, status } = useSession();
 
-  // Load user data on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const response = await fetch('/api/user');
-        if (response.ok) {
-          const user = await response.json();
+  const loadUser = useCallback(async () => {
+    if (status !== 'authenticated' || !session) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return;
+    }
 
-          // Transform data to match our state format
-          const categories: BudgetCategory[] = user.categories.map((c: { id: string; name: string; limit: number; color: string }) => ({
-            id: c.id,
-            name: c.name,
-            limit: c.limit,
-            color: c.color,
-          }));
+    try {
+      const response = await fetch('/api/user');
+      if (response.ok) {
+        const user = await response.json();
 
-          const expenses: Expense[] = user.expenses.map((e: { id: string; categoryId: string; amount: number; description: string | null; date: string; createdAt: string }) => ({
-            id: e.id,
-            categoryId: e.categoryId,
-            amount: e.amount,
-            description: e.description || '',
-            date: e.date.split('T')[0],
-            createdAt: e.createdAt,
-          }));
+        // Transform data to match our state format
+        const categories: BudgetCategory[] = user.categories.map((c: { id: string; name: string; limit: number; color: string }) => ({
+          id: c.id,
+          name: c.name,
+          limit: c.limit,
+          color: c.color,
+        }));
 
-          dispatch({
-            type: 'SET_INITIAL_STATE',
-            payload: {
-              isSetupComplete: user.isSetupComplete,
-              monthlyIncome: user.monthlyIncome || 0,
-              categories,
-              expenses,
-              selectedMonth: new Date().toISOString().slice(0, 7),
-            },
-          });
-        }
-      } catch (error) {
-        console.error('Failed to load user:', error);
+        const expenses: Expense[] = user.expenses.map((e: { id: string; categoryId: string; amount: number; description: string | null; date: string; createdAt: string }) => ({
+          id: e.id,
+          categoryId: e.categoryId,
+          amount: e.amount,
+          description: e.description || '',
+          date: e.date.split('T')[0],
+          createdAt: e.createdAt,
+        }));
+
+        dispatch({
+          type: 'SET_INITIAL_STATE',
+          payload: {
+            isSetupComplete: user.isSetupComplete,
+            monthlyIncome: user.monthlyIncome || 0,
+            categories,
+            expenses,
+            selectedMonth: new Date().toISOString().slice(0, 7),
+          },
+        });
+      } else {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
-    };
+    } catch (error) {
+      console.error('Failed to load user:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [session, status]);
 
+  // Load user data when session is ready
+  useEffect(() => {
+    if (status === 'loading') return;
     loadUser();
-  }, []);
+  }, [status, loadUser]);
 
   const getSpendingByCategory = useCallback((month?: string): Map<string, number> => {
     const targetMonth = month || state.selectedMonth;
@@ -306,6 +317,11 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshData = async () => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    await loadUser();
+  };
+
   return (
     <ExpenseContext.Provider
       value={{
@@ -322,6 +338,7 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         updateExpense,
         deleteExpense,
         resetApp,
+        refreshData,
       }}
     >
       {children}
