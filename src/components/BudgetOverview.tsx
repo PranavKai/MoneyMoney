@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
-import { AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { AlertTriangle, TrendingUp, TrendingDown, ArrowLeftRight } from 'lucide-react';
 import { useExpense } from '@/context/ExpenseContext';
 import { SpendingSummary } from '@/types';
+import AdjustBudgetModal from './AdjustBudgetModal';
 
 export default function BudgetOverview() {
   const { state, getSpendingByCategory } = useExpense();
+  const [adjustingCategory, setAdjustingCategory] = useState<SpendingSummary | null>(null);
 
   const summaries: SpendingSummary[] = useMemo(() => {
     const spending = getSpendingByCategory();
@@ -30,8 +32,22 @@ export default function BudgetOverview() {
   const totalSpent = summaries.reduce((sum, s) => sum + s.spent, 0);
   const overBudgetCategories = summaries.filter((s) => s.isOverBudget);
 
+  // Check if there are non-essential categories with remaining budget
+  const hasAdjustableSources = useMemo(() => {
+    const spending = getSpendingByCategory();
+    return state.categories.some((cat) => {
+      if (cat.isEssential) return false;
+      const spent = spending.get(cat.id) || 0;
+      return cat.limit - spent > 0;
+    });
+  }, [state.categories, getSpendingByCategory]);
+
   const getCategoryColor = (categoryId: string) => {
     return state.categories.find((c) => c.id === categoryId)?.color || '#6b7280';
+  };
+
+  const isEssentialCategory = (categoryId: string) => {
+    return state.categories.find((c) => c.id === categoryId)?.isEssential || false;
   };
 
   return (
@@ -41,7 +57,7 @@ export default function BudgetOverview() {
         <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-6 h-6 text-red-400 flex-shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="text-red-400 font-semibold">Budget Alert!</p>
               <p className="text-red-300 text-sm">
                 You&apos;ve exceeded your budget in{' '}
@@ -123,6 +139,11 @@ export default function BudgetOverview() {
                     style={{ backgroundColor: getCategoryColor(summary.categoryId) }}
                   />
                   <span className="text-white font-medium">{summary.categoryName}</span>
+                  {isEssentialCategory(summary.categoryId) && (
+                    <span className="text-xs text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded">
+                      Essential
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {summary.isOverBudget ? (
@@ -159,24 +180,45 @@ export default function BudgetOverview() {
                 />
               </div>
 
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-400">
                   ¥{summary.spent.toLocaleString()} / ¥{summary.limit.toLocaleString()}
                 </span>
-                <span
-                  className={
-                    summary.remaining < 0 ? 'text-red-400' : 'text-slate-400'
-                  }
-                >
-                  {summary.remaining < 0
-                    ? `Over by ¥${Math.abs(summary.remaining).toLocaleString()}`
-                    : `¥${summary.remaining.toLocaleString()} left`}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={
+                      summary.remaining < 0 ? 'text-red-400' : 'text-slate-400'
+                    }
+                  >
+                    {summary.remaining < 0
+                      ? `Over by ¥${Math.abs(summary.remaining).toLocaleString()}`
+                      : `¥${summary.remaining.toLocaleString()} left`}
+                  </span>
+                  {/* Adjust Button - only show for over-budget categories when there are adjustable sources */}
+                  {summary.isOverBudget && hasAdjustableSources && (
+                    <button
+                      onClick={() => setAdjustingCategory(summary)}
+                      className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-amber-400 transition-colors"
+                      title="Adjust budget from other categories"
+                    >
+                      <ArrowLeftRight className="w-3 h-3" />
+                      <span>Adjust</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Adjust Budget Modal */}
+      {adjustingCategory && (
+        <AdjustBudgetModal
+          overBudgetCategory={adjustingCategory}
+          onClose={() => setAdjustingCategory(null)}
+        />
+      )}
     </div>
   );
 }

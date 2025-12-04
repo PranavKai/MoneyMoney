@@ -3,6 +3,7 @@ export interface BudgetCategory {
   name: string;
   limit: number;
   color: string;
+  isEssential: boolean; // Essential categories (Rent, Utilities) won't be used for budget adjustment
 }
 
 export interface Expense {

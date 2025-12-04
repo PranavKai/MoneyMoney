@@ -2,27 +2,16 @@
 
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
-import { Wallet, Settings, RotateCcw, LogOut } from 'lucide-react';
+import { Wallet, Settings, LogOut } from 'lucide-react';
 import { useExpense } from '@/context/ExpenseContext';
 import SettingsModal from './SettingsModal';
 
 export default function Header() {
-  const { state, resetApp, getMonthlyTotal } = useExpense();
+  const { state, getMonthlyTotal } = useExpense();
   const [showSettings, setShowSettings] = useState(false);
 
   const totalSpent = getMonthlyTotal();
   const remaining = state.monthlyIncome - totalSpent;
-
-  const handleReset = async () => {
-    if (confirm('Are you sure you want to reset the app? All data will be lost.')) {
-      try {
-        await resetApp();
-      } catch (error) {
-        console.error('Failed to reset app:', error);
-        alert('Failed to reset app. Please try again.');
-      }
-    }
-  };
 
   return (
     <>
@@ -59,13 +48,6 @@ export default function Header() {
                 title="Settings"
               >
                 <Settings className="w-5 h-5 text-slate-400" />
-              </button>
-              <button
-                onClick={handleReset}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Reset App"
-              >
-                <RotateCcw className="w-5 h-5 text-slate-400" />
               </button>
               <button
                 onClick={() => signOut()}

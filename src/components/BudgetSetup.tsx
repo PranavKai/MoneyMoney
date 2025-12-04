@@ -1,19 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Wallet, Loader2, Banknote } from 'lucide-react';
+import { Plus, Trash2, Wallet, Loader2, Banknote, Lock } from 'lucide-react';
 import { useExpense } from '@/context/ExpenseContext';
 import { BudgetCategory } from '@/types';
 
 const DEFAULT_CATEGORIES = [
-  { name: 'Rent', color: '#ef4444' },
-  { name: 'Food', color: '#f97316' },
-  { name: 'Transport', color: '#eab308' },
-  { name: 'Utilities', color: '#22c55e' },
-  { name: 'Entertainment', color: '#3b82f6' },
-  { name: 'Shopping', color: '#8b5cf6' },
-  { name: 'Healthcare', color: '#ec4899' },
-  { name: 'Other', color: '#6b7280' },
+  { name: 'Rent', color: '#ef4444', isEssential: true },
+  { name: 'Food', color: '#f97316', isEssential: false },
+  { name: 'Transport', color: '#eab308', isEssential: false },
+  { name: 'Utilities', color: '#22c55e', isEssential: true },
+  { name: 'Entertainment', color: '#3b82f6', isEssential: false },
+  { name: 'Shopping', color: '#8b5cf6', isEssential: false },
+  { name: 'Healthcare', color: '#ec4899', isEssential: true },
+  { name: 'Other', color: '#6b7280', isEssential: false },
 ];
 
 const COLORS = [
@@ -26,6 +26,7 @@ interface CategoryInput {
   name: string;
   limit: string;
   color: string;
+  isEssential: boolean;
 }
 
 export default function BudgetSetup() {
@@ -38,6 +39,7 @@ export default function BudgetSetup() {
       name: cat.name,
       limit: '',
       color: cat.color,
+      isEssential: cat.isEssential,
     }))
   );
 
@@ -50,6 +52,7 @@ export default function BudgetSetup() {
         name: '',
         limit: '',
         color: COLORS[categories.length % COLORS.length],
+        isEssential: false,
       },
     ]);
   };
@@ -58,7 +61,7 @@ export default function BudgetSetup() {
     setCategories(categories.filter((c) => c.id !== id));
   };
 
-  const updateCategory = (id: string, field: keyof CategoryInput, value: string) => {
+  const updateCategory = (id: string, field: keyof CategoryInput, value: string | boolean) => {
     setCategories(
       categories.map((c) =>
         c.id === id ? { ...c, [field]: value } : c
@@ -81,6 +84,7 @@ export default function BudgetSetup() {
         name: c.name.trim(),
         limit: parseFloat(c.limit) || 0,
         color: c.color,
+        isEssential: c.isEssential,
       }));
 
     if (validCategories.length === 0) {
@@ -144,9 +148,10 @@ export default function BudgetSetup() {
             <label className="text-sm font-medium text-slate-300">
               Budget Categories
             </label>
-            <span className="text-xs text-slate-400">
-              Set limits for each spending category
-            </span>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <Lock className="w-3 h-3" />
+              <span>Essential = Protected from budget adjustments</span>
+            </div>
           </div>
 
           {/* Categories */}
@@ -154,7 +159,11 @@ export default function BudgetSetup() {
             {categories.map((category) => (
               <div
                 key={category.id}
-                className="flex items-center gap-3 bg-white/5 rounded-xl p-3 border border-white/10"
+                className={`flex items-center gap-3 rounded-xl p-3 border ${
+                  category.isEssential
+                    ? 'bg-amber-500/10 border-amber-500/30'
+                    : 'bg-white/5 border-white/10'
+                }`}
               >
                 <input
                   type="color"
@@ -179,6 +188,18 @@ export default function BudgetSetup() {
                     className="w-24 bg-transparent text-white placeholder-slate-400 focus:outline-none"
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => updateCategory(category.id, 'isEssential', !category.isEssential)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    category.isEssential
+                      ? 'bg-amber-500/30 text-amber-400'
+                      : 'hover:bg-white/10 text-slate-400'
+                  }`}
+                  title={category.isEssential ? 'Essential (protected)' : 'Mark as essential'}
+                >
+                  <Lock className="w-5 h-5" />
+                </button>
                 <button
                   type="button"
                   onClick={() => removeCategory(category.id)}

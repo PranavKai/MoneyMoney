@@ -117,11 +117,12 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         const user = await response.json();
 
         // Transform data to match our state format
-        const categories: BudgetCategory[] = user.categories.map((c: { id: string; name: string; limit: number; color: string }) => ({
+        const categories: BudgetCategory[] = user.categories.map((c: { id: string; name: string; limit: number; color: string; isEssential: boolean }) => ({
           id: c.id,
           name: c.name,
           limit: c.limit,
           color: c.color,
+          isEssential: c.isEssential || false,
         }));
 
         const expenses: Expense[] = user.expenses.map((e: { id: string; categoryId: string; amount: number; description: string | null; date: string; createdAt: string }) => ({

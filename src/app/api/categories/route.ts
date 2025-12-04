@@ -20,12 +20,13 @@ export async function POST(request: NextRequest) {
 
     // Create new categories
     const createdCategories = await Promise.all(
-      categories.map((cat: { name: string; limit: number; color: string }) =>
+      categories.map((cat: { name: string; limit: number; color: string; isEssential?: boolean }) =>
         prisma.category.create({
           data: {
             name: cat.name,
             limit: cat.limit,
             color: cat.color,
+            isEssential: cat.isEssential || false,
             userId: session.user.id,
           },
         })
@@ -77,6 +78,7 @@ export async function PUT(request: NextRequest) {
             name: cat.name,
             limit: cat.limit,
             color: cat.color,
+            isEssential: cat.isEssential || false,
           },
         });
         updatedCategories.push(updated);
@@ -88,6 +90,7 @@ export async function PUT(request: NextRequest) {
             name: cat.name,
             limit: cat.limit,
             color: cat.color,
+            isEssential: cat.isEssential || false,
             userId: session.user.id,
           },
         });
