@@ -71,15 +71,31 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center z-[200]"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="bg-slate-800 rounded-t-3xl md:rounded-2xl p-6 pb-8 w-full md:max-w-md border-t md:border border-white/20 shadow-xl max-h-[90vh] overflow-y-auto safe-area-bottom">
-        {/* Mobile drag handle */}
-        <div className="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-4 md:hidden" />
+    <div className="fixed inset-0 bg-slate-900 md:bg-black/70 md:backdrop-blur-sm flex flex-col md:items-center md:justify-center z-[200]">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-white/10">
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-white transition-colors font-medium"
+        >
+          Cancel
+        </button>
+        <h3 className="text-lg font-semibold text-white">
+          {expense ? 'Edit Expense' : 'Add Expense'}
+        </h3>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting || !categoryId || !amount}
+          className="text-emerald-400 hover:text-emerald-300 transition-colors font-semibold disabled:opacity-50"
+        >
+          {isSubmitting ? 'Saving...' : 'Save'}
+        </button>
+      </div>
 
-        <div className="flex items-center justify-between mb-6">
+      {/* Content */}
+      <div className="flex-1 md:flex-none overflow-y-auto p-6 md:bg-slate-800 md:rounded-2xl md:w-full md:max-w-md md:border md:border-white/20 md:shadow-xl md:max-h-[90vh]">
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-white">
             {expense ? 'Edit Expense' : 'Add Expense'}
           </h3>
@@ -91,17 +107,17 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
           </button>
         </div>
 
-        <div className="mb-4 text-center">
+        <div className="mb-6 text-center">
           <span className="text-slate-400">
             {format(date, 'EEEE, MMMM d, yyyy')}
           </span>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Category Selection */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-3">
                 Category
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -111,11 +127,11 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
                     type="button"
                     onClick={() => setCategoryId(cat.id)}
                     className={`
-                      p-3 rounded-lg border-2 transition-all text-left
+                      p-3 rounded-xl border-2 transition-all text-left
                       ${
                         categoryId === cat.id
                           ? 'border-emerald-400 bg-emerald-500/20'
-                          : 'border-white/10 hover:border-white/30'
+                          : 'border-white/10 hover:border-white/30 bg-white/5'
                       }
                     `}
                   >
@@ -133,7 +149,7 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
 
             {/* Amount Input */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-3">
                 Amount (¥)
               </label>
               <input
@@ -141,13 +157,14 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className="w-full bg-white/10 rounded-lg px-4 py-3 text-white text-2xl font-semibold placeholder-slate-500 border border-white/10 focus:outline-none focus:border-emerald-400"
+                autoFocus
+                className="w-full bg-white/5 rounded-xl px-4 py-4 text-white text-3xl font-bold placeholder-slate-600 border border-white/10 focus:outline-none focus:border-emerald-400 text-center"
               />
             </div>
 
             {/* Description Input */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-3">
                 Description (optional)
               </label>
               <input
@@ -155,12 +172,20 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What did you spend on?"
-                className="w-full bg-white/10 rounded-lg px-4 py-3 text-white placeholder-slate-500 border border-white/10 focus:outline-none focus:border-emerald-400"
+                className="w-full bg-white/5 rounded-xl px-4 py-3 text-white placeholder-slate-500 border border-white/10 focus:outline-none focus:border-emerald-400"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 mt-6">
+          {/* Desktop Buttons */}
+          <div className="hidden md:flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 bg-white/10 text-slate-300 rounded-xl font-medium hover:bg-white/20 transition-colors"
+            >
+              Cancel
+            </button>
             {expense && (
               <button
                 type="button"
@@ -188,6 +213,20 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
               )}
             </button>
           </div>
+
+          {/* Mobile Delete Button (if editing) */}
+          {expense && (
+            <div className="md:hidden mt-8">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isSubmitting}
+                className="w-full py-3 bg-red-500/20 text-red-400 rounded-xl font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50"
+              >
+                Delete Expense
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
