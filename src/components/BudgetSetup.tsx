@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Wallet, Loader2, Banknote, Lock } from 'lucide-react';
+import { Plus, Trash2, Loader2, Banknote, Lock } from 'lucide-react';
+import Image from 'next/image';
 import { useExpense } from '@/context/ExpenseContext';
 import { BudgetCategory } from '@/types';
 
@@ -111,8 +112,14 @@ export default function BudgetSetup() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 w-full max-w-2xl shadow-2xl border border-white/20">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 mb-4">
-            <Wallet className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-full overflow-hidden mb-4 mx-auto">
+            <Image
+              src="/logo.png"
+              alt="MoneyMoney"
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Set Your Budget</h1>
           <p className="text-slate-300">
