@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
-import { Wallet, Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut } from 'lucide-react';
+import Image from 'next/image';
 import { useExpense } from '@/context/ExpenseContext';
 import SettingsModal from './SettingsModal';
 
@@ -19,8 +20,14 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl">
-                <Wallet className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl overflow-hidden">
+                <Image
+                  src="/logo.png"
+                  alt="MoneyMoney"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">MoneyMoney</h1>
