@@ -23,7 +23,7 @@ export default function Header() {
                 <Wallet className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Expense Tracker</h1>
+                <h1 className="text-xl font-bold text-white">MoneyMoney</h1>
                 <p className="text-sm text-slate-400">
                   Spent ¥{totalSpent.toLocaleString()} of ¥{state.monthlyIncome.toLocaleString()} income
                 </p>
