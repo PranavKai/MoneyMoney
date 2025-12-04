@@ -71,8 +71,14 @@ export default function ExpenseModal({ date, expense, onClose }: ExpenseModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-white/20 shadow-xl">
+    <div
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center z-[200]"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-slate-800 rounded-t-3xl md:rounded-2xl p-6 pb-8 w-full md:max-w-md border-t md:border border-white/20 shadow-xl max-h-[90vh] overflow-y-auto safe-area-bottom">
+        {/* Mobile drag handle */}
+        <div className="w-12 h-1.5 bg-slate-600 rounded-full mx-auto mb-4 md:hidden" />
+
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-white">
             {expense ? 'Edit Expense' : 'Add Expense'}
