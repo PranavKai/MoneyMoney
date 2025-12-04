@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { AlertTriangle, TrendingUp, TrendingDown, ArrowLeftRight } from 'lucide-react';
+import { AlertTriangle, TrendingUp, TrendingDown, ArrowLeftRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useExpense } from '@/context/ExpenseContext';
 import { SpendingSummary } from '@/types';
 import AdjustBudgetModal from './AdjustBudgetModal';
@@ -9,6 +9,7 @@ import AdjustBudgetModal from './AdjustBudgetModal';
 export default function BudgetOverview() {
   const { state, getSpendingByCategory } = useExpense();
   const [adjustingCategory, setAdjustingCategory] = useState<SpendingSummary | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const summaries: SpendingSummary[] = useMemo(() => {
     const spending = getSpendingByCategory();
@@ -69,8 +70,35 @@ export default function BudgetOverview() {
       )}
 
       {/* Total Overview */}
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-        <h3 className="text-lg font-semibold text-white mb-4">Monthly Overview</h3>
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 overflow-hidden">
+        {/* Header - Clickable on mobile */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full p-4 md:p-6 flex items-center justify-between md:cursor-default"
+        >
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-white">Monthly Overview</h3>
+            {/* Quick stat badge on mobile when collapsed */}
+            {!isExpanded && (
+              <span className={`md:hidden text-sm px-2 py-0.5 rounded-full ${
+                totalSpent > totalBudget ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'
+              }`}>
+                ¥{totalSpent.toLocaleString()}
+              </span>
+            )}
+          </div>
+          {/* Chevron - Mobile only */}
+          <div className="md:hidden">
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-slate-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-slate-400" />
+            )}
+          </div>
+        </button>
+
+        {/* Content - Collapsible on mobile, always visible on desktop */}
+        <div className={`px-4 pb-4 md:px-6 md:pb-6 ${isExpanded ? 'block' : 'hidden md:block'}`}>
 
         {/* Income Summary */}
         <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-4 mb-4 border border-blue-500/30">
@@ -209,6 +237,7 @@ export default function BudgetOverview() {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </div>
 

@@ -42,10 +42,10 @@ export default function Dashboard() {
       {/* Floating Add Expense Button - Mobile Only */}
       <button
         onClick={() => setShowQuickExpense(true)}
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center z-50 active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-8 right-6 w-16 h-16 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full shadow-2xl shadow-emerald-500/50 flex items-center justify-center z-[100] active:scale-95 transition-transform border-2 border-white/30"
         aria-label="Add Expense"
       >
-        <Plus className="w-7 h-7 text-white" />
+        <Plus className="w-8 h-8 text-white" />
       </button>
 
       {/* Quick Expense Modal */}
